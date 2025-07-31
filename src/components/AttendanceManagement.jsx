@@ -27,6 +27,10 @@ const AttendanceManagement = () => {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [statusFilter, setStatusFilter] = useState("ALL"); // "ALL", "PRESENT", "ABSENT"
 
+    // Defaulters state
+    const [defaulters, setDefaulters] = useState([]);
+    const [checkingDefaulters, setCheckingDefaulters] = useState(false);
+
     const API_BASE = import.meta.env.VITE_API_URL;
 
     // Fetch batches on mount
@@ -186,8 +190,8 @@ const AttendanceManagement = () => {
         statusFilter === "ALL"
             ? attendanceHistory
             : attendanceHistory.filter(
-                (record) => record.status === statusFilter,
-            );
+                  (record) => record.status === statusFilter,
+              );
 
     // Badge component for status
     const StatusBadge = ({ status }) => {
@@ -207,6 +211,69 @@ const AttendanceManagement = () => {
             );
         return <span>{status}</span>;
     };
+
+    // --------- Defaulters logic (frontend only) ----------
+    const fetchDefaulters = async () => {
+        if (!selectedBatch || students.length === 0) {
+            setDefaulters([]);
+            return;
+        }
+        setCheckingDefaulters(true);
+        const result = [];
+        for (const student of students) {
+            try {
+                const res = await fetch(
+                    `${API_BASE}/attendance/student/${student.id}`,
+                );
+                if (res.ok) {
+                    const data = await res.json();
+                    // Sort by date ascending
+                    const sorted = [...(data.attendance || [])].sort((a, b) =>
+                        a.date.localeCompare(b.date),
+                    );
+                    // Find max consecutive absences
+                    let maxStreak = 0;
+                    let currentStreak = 0;
+                    let streakDates = [];
+                    let tempStreakDates = [];
+                    for (const record of sorted) {
+                        if (record.status === "ABSENT") {
+                            currentStreak++;
+                            tempStreakDates.push(record.date);
+                            if (currentStreak > maxStreak) {
+                                maxStreak = currentStreak;
+                                streakDates = [...tempStreakDates];
+                            }
+                        } else {
+                            currentStreak = 0;
+                            tempStreakDates = [];
+                        }
+                    }
+                    if (maxStreak >= 3) {
+                        result.push({
+                            ...student,
+                            absentStreak: maxStreak,
+                            absentDates: streakDates,
+                        });
+                    }
+                }
+            } catch (e) {
+                // ignore error for single student
+            }
+        }
+        setDefaulters(result);
+        setCheckingDefaulters(false);
+    };
+
+    // Option: Automatically check for defaulters when students list changes
+    useEffect(() => {
+        if (selectedBatch) {
+            fetchDefaulters();
+        } else {
+            setDefaulters([]);
+        }
+        // eslint-disable-next-line
+    }, [students, selectedBatch]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 lg:px-8">
@@ -386,7 +453,7 @@ const AttendanceManagement = () => {
                                             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 w-full max-w-[120px] justify-center ${attendance[student.id] === "ABSENT" ? "bg-red-500 text-white hover:bg-red-600" : "bg-green-500 text-white hover:bg-green-600"}`}
                                         >
                                             {attendance[student.id] ===
-                                                "ABSENT" ? (
+                                            "ABSENT" ? (
                                                 <XCircle className="w-5 h-5" />
                                             ) : (
                                                 <CheckCircle className="w-5 h-5" />
@@ -402,6 +469,41 @@ const AttendanceManagement = () => {
                     </>
                 )}
 
+                {/* --- Defaulters Section --- */}
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-8">
+                    <h2 className="text-xl font-bold text-red-700 mb-3 flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        Defaulters (3+ Consecutive Absences)
+                    </h2>
+                    {checkingDefaulters ? (
+                        <div>Checking for defaulters...</div>
+                    ) : defaulters.length > 0 ? (
+                        <ul>
+                            {defaulters.map((student) => (
+                                <li
+                                    key={student.id}
+                                    className="text-red-800 text-sm font-semibold flex items-center gap-2 mb-1"
+                                >
+                                    <XCircle className="w-4 h-4 text-red-500" />
+                                    {student.firstName}{" "}
+                                    {student.middleName && (
+                                        <> {student.middleName} </>
+                                    )}
+                                    {student.lastName}
+                                    <span className="ml-2 text-xs text-red-700 bg-red-100 rounded-full px-2 py-0.5 font-normal">
+                                        {student.absentStreak} days:{" "}
+                                        {student.absentDates.join(", ")}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="text-sm text-gray-600">
+                            No defaulters found.
+                        </div>
+                    )}
+                </div>
+
                 {/* --- Attendance History Section --- */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-3">
@@ -411,29 +513,32 @@ const AttendanceManagement = () => {
                         </h2>
                         <div className="flex gap-2 mt-2 md:mt-0">
                             <button
-                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${statusFilter === "ALL"
+                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${
+                                    statusFilter === "ALL"
                                         ? "bg-blue-500 text-white border-blue-500"
                                         : "bg-white text-gray-700 border-gray-200 hover:bg-blue-50"
-                                    }`}
+                                }`}
                                 onClick={() => setStatusFilter("ALL")}
                             >
                                 All
                             </button>
                             <button
-                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${statusFilter === "PRESENT"
+                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${
+                                    statusFilter === "PRESENT"
                                         ? "bg-green-500 text-white border-green-500"
                                         : "bg-white text-gray-700 border-gray-200 hover:bg-green-50"
-                                    }`}
+                                }`}
                                 onClick={() => setStatusFilter("PRESENT")}
                             >
                                 <CheckCircle className="w-4 h-4 inline-block mr-1" />
                                 Present
                             </button>
                             <button
-                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${statusFilter === "ABSENT"
+                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${
+                                    statusFilter === "ABSENT"
                                         ? "bg-red-500 text-white border-red-500"
                                         : "bg-white text-gray-700 border-gray-200 hover:bg-red-50"
-                                    }`}
+                                }`}
                                 onClick={() => setStatusFilter("ABSENT")}
                             >
                                 <AlertCircle className="w-4 h-4 inline-block mr-1" />
