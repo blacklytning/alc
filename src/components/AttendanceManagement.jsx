@@ -20,6 +20,10 @@ const AttendanceManagement = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
+    // Attendance history state
+    const [attendanceHistory, setAttendanceHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+
     const API_BASE = import.meta.env.VITE_API_URL;
 
     // Fetch batches on mount
@@ -128,6 +132,8 @@ const AttendanceManagement = () => {
             });
             if (response.ok) {
                 toast.success("Attendance saved successfully!");
+                // Also refresh attendance history after marking
+                fetchAttendanceHistory();
             } else {
                 const errorData = await response.json();
                 toast.error(errorData.detail || "Failed to save attendance");
@@ -139,6 +145,38 @@ const AttendanceManagement = () => {
             setSaving(false);
         }
     };
+
+    // Fetch attendance history for the selected date and batch
+    const fetchAttendanceHistory = async () => {
+        if (!selectedBatch || !date) {
+            setAttendanceHistory([]);
+            return;
+        }
+        setHistoryLoading(true);
+        try {
+            const response = await fetch(
+                `${API_BASE}/attendance/by-date?date_str=${date}&batch_timing=${encodeURIComponent(selectedBatch)}`,
+            );
+            if (response.ok) {
+                const data = await response.json();
+                setAttendanceHistory(data.attendance || []);
+            } else {
+                setAttendanceHistory([]);
+                toast.error("Failed to fetch attendance history");
+            }
+        } catch (error) {
+            setAttendanceHistory([]);
+            toast.error("Failed to fetch attendance history");
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
+    // Fetch attendance history when batch/date changes
+    useEffect(() => {
+        fetchAttendanceHistory();
+        // eslint-disable-next-line
+    }, [selectedBatch, date, API_BASE]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 lg:px-8">
@@ -328,6 +366,53 @@ const AttendanceManagement = () => {
                         </div>
                     </>
                 )}
+
+                {/* --- Attendance History Section --- */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                    <h2 className="text-2xl font-bold mb-4">
+                        Attendance History
+                    </h2>
+                    {historyLoading ? (
+                        <div>Loading attendance history...</div>
+                    ) : !selectedBatch ? (
+                        <div>
+                            Please select a batch and date to view history.
+                        </div>
+                    ) : attendanceHistory.length === 0 ? (
+                        <div>
+                            No attendance records for this date and batch.
+                        </div>
+                    ) : (
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th className="px-4 py-2 text-left">
+                                        Student Name
+                                    </th>
+                                    <th className="px-4 py-2 text-left">
+                                        Status
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {attendanceHistory.map((record) => (
+                                    <tr key={record.student_id}>
+                                        <td className="px-4 py-2">
+                                            {record.firstName}{" "}
+                                            {record.middleName
+                                                ? `${record.middleName} `
+                                                : ""}
+                                            {record.lastName}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            {record.status}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
         </div>
     );
