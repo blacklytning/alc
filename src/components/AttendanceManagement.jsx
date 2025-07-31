@@ -7,6 +7,8 @@ import {
     Filter,
     Save,
     RefreshCw,
+    Calendar,
+    AlertCircle,
 } from "lucide-react";
 
 const AttendanceManagement = () => {
@@ -23,6 +25,7 @@ const AttendanceManagement = () => {
     // Attendance history state
     const [attendanceHistory, setAttendanceHistory] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+    const [statusFilter, setStatusFilter] = useState("ALL"); // "ALL", "PRESENT", "ABSENT"
 
     const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -178,16 +181,43 @@ const AttendanceManagement = () => {
         // eslint-disable-next-line
     }, [selectedBatch, date, API_BASE]);
 
+    // Filtering attendance history
+    const filteredAttendanceHistory =
+        statusFilter === "ALL"
+            ? attendanceHistory
+            : attendanceHistory.filter(
+                (record) => record.status === statusFilter,
+            );
+
+    // Badge component for status
+    const StatusBadge = ({ status }) => {
+        if (status === "PRESENT")
+            return (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Present
+                </span>
+            );
+        if (status === "ABSENT")
+            return (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+                    <AlertCircle className="w-4 h-4 text-red-500" />
+                    Absent
+                </span>
+            );
+        return <span>{status}</span>;
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
                 <div className="bg-white rounded-3xl shadow-sm p-8 border border-white/20 mb-6">
                     <div className="text-center">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                        <h1 className="text-4xl font-bold text-gray-900 mb-2">
                             Attendance Management
                         </h1>
-                        <p className="text-gray-600 text-lg">
+                        <p className="text-gray-700 text-base font-medium">
                             Mark and manage daily student attendance by batch
                         </p>
                     </div>
@@ -217,13 +247,16 @@ const AttendanceManagement = () => {
                                     ))}
                                 </select>
                             </div>
-                            {/* Date picker without icon */}
-                            <div className="w-full max-w-xs min-w-[180px]">
+                            {/* Date picker with calendar icon */}
+                            <div className="relative w-full max-w-xs min-w-[180px]">
+                                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Calendar className="w-5 h-5 text-gray-500" />
+                                </span>
                                 <input
                                     type="date"
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm h-12 min-w-[120px]"
+                                    className="w-full pl-10 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm h-12 min-w-[120px]"
                                 />
                             </div>
                             {/* Total badge beside date */}
@@ -335,12 +368,14 @@ const AttendanceManagement = () => {
                                                 "https://via.placeholder.com/80x80?text=No+Photo";
                                         }}
                                     />
-                                    <div className="text-lg font-semibold text-gray-900 text-center mb-1 min-h-[3rem] flex items-center justify-center">
+                                    <div className="text-base font-semibold text-gray-900 text-center mb-1 min-h-[2rem] flex items-center justify-center">
                                         {student.firstName}{" "}
-                                        {student.middleName || ""}{" "}
+                                        {student.middleName && (
+                                            <> {student.middleName} </>
+                                        )}
                                         {student.lastName}
                                     </div>
-                                    <p className="text-sm text-gray-600 mb-3 text-center flex items-center gap-1">
+                                    <p className="text-xs text-gray-600 mb-3 text-center flex items-center gap-1">
                                         {student.timing}
                                     </p>
                                     <div className="mt-auto w-full flex justify-center">
@@ -351,7 +386,7 @@ const AttendanceManagement = () => {
                                             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 w-full max-w-[120px] justify-center ${attendance[student.id] === "ABSENT" ? "bg-red-500 text-white hover:bg-red-600" : "bg-green-500 text-white hover:bg-green-600"}`}
                                         >
                                             {attendance[student.id] ===
-                                            "ABSENT" ? (
+                                                "ABSENT" ? (
                                                 <XCircle className="w-5 h-5" />
                                             ) : (
                                                 <CheckCircle className="w-5 h-5" />
@@ -369,48 +404,92 @@ const AttendanceManagement = () => {
 
                 {/* --- Attendance History Section --- */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-                    <h2 className="text-2xl font-bold mb-4">
-                        Attendance History
-                    </h2>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-3">
+                        <h2 className="text-2xl font-extrabold text-gray-800 flex items-center gap-2">
+                            <Calendar className="w-7 h-7 text-blue-500" />
+                            Attendance History
+                        </h2>
+                        <div className="flex gap-2 mt-2 md:mt-0">
+                            <button
+                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${statusFilter === "ALL"
+                                        ? "bg-blue-500 text-white border-blue-500"
+                                        : "bg-white text-gray-700 border-gray-200 hover:bg-blue-50"
+                                    }`}
+                                onClick={() => setStatusFilter("ALL")}
+                            >
+                                All
+                            </button>
+                            <button
+                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${statusFilter === "PRESENT"
+                                        ? "bg-green-500 text-white border-green-500"
+                                        : "bg-white text-gray-700 border-gray-200 hover:bg-green-50"
+                                    }`}
+                                onClick={() => setStatusFilter("PRESENT")}
+                            >
+                                <CheckCircle className="w-4 h-4 inline-block mr-1" />
+                                Present
+                            </button>
+                            <button
+                                className={`px-3 py-1 rounded-lg text-xs font-semibold border ${statusFilter === "ABSENT"
+                                        ? "bg-red-500 text-white border-red-500"
+                                        : "bg-white text-gray-700 border-gray-200 hover:bg-red-50"
+                                    }`}
+                                onClick={() => setStatusFilter("ABSENT")}
+                            >
+                                <AlertCircle className="w-4 h-4 inline-block mr-1" />
+                                Absent
+                            </button>
+                        </div>
+                    </div>
                     {historyLoading ? (
                         <div>Loading attendance history...</div>
                     ) : !selectedBatch ? (
                         <div>
                             Please select a batch and date to view history.
                         </div>
-                    ) : attendanceHistory.length === 0 ? (
+                    ) : filteredAttendanceHistory.length === 0 ? (
                         <div>
                             No attendance records for this date and batch.
                         </div>
                     ) : (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th className="px-4 py-2 text-left">
-                                        Student Name
-                                    </th>
-                                    <th className="px-4 py-2 text-left">
-                                        Status
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {attendanceHistory.map((record) => (
-                                    <tr key={record.student_id}>
-                                        <td className="px-4 py-2">
-                                            {record.firstName}{" "}
-                                            {record.middleName
-                                                ? `${record.middleName} `
-                                                : ""}
-                                            {record.lastName}
-                                        </td>
-                                        <td className="px-4 py-2">
-                                            {record.status}
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th className="px-4 py-2 text-left text-sm text-gray-600">
+                                            Student Name
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-sm text-gray-600">
+                                            Status
+                                        </th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filteredAttendanceHistory.map((record) => (
+                                        <tr key={record.student_id}>
+                                            <td className="px-4 py-2 text-sm text-gray-900">
+                                                <span className="font-medium">
+                                                    {record.firstName}
+                                                </span>
+                                                {record.middleName && (
+                                                    <span className="ml-1">
+                                                        {record.middleName}
+                                                    </span>
+                                                )}
+                                                <span className="ml-1">
+                                                    {record.lastName}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                <StatusBadge
+                                                    status={record.status}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             </div>
