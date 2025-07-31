@@ -531,6 +531,12 @@ const DocumentUpload = () => {
                                 <option value="EDUCATIONAL_CERTIFICATE">
                                     Educational Certificate
                                 </option>
+                                <option
+                                    value="FINAL_CERTIFICATE"
+                                    style={{ color: "red" }}
+                                >
+                                    Final Certificate
+                                </option>
                                 <option value="OTHER">Other Document</option>
                             </select>
                             {errors.document_type && (
