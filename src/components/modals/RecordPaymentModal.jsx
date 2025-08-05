@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { X, Save } from "lucide-react";
+
+// Denominations: 500, 200, 100, 50, 20, 10 ONLY
+const denominationValues = [500, 200, 100, 50, 20, 10];
 
 const RecordPaymentModal = ({
     open,
@@ -11,7 +14,146 @@ const RecordPaymentModal = ({
     onSubmit,
     toast,
 }) => {
+    // Denominations state for cash
+    const [denominations, setDenominations] = useState(
+        denominationValues.map((value) => ({
+            value,
+            count: "",
+            serials: value === 500 ? [""] : [],
+        })),
+    );
+
+    // Cheque details state
+    const [chequeDetails, setChequeDetails] = useState({
+        cheque_number: "",
+        bank_name: "",
+    });
+
+    // When amount, late_fee, or discount changes, reset denominations
+    React.useEffect(() => {
+        setDenominations(
+            denominationValues.map((value) => ({
+                value,
+                count: "",
+                serials: value === 500 ? [""] : [],
+            })),
+        );
+    }, [paymentData.amount, paymentData.late_fee, paymentData.discount, open]);
+
     if (!open || !student) return null;
+
+    // Calculate total cash entered
+    const cashTotal = denominations.reduce(
+        (sum, d) => sum + (parseInt(d.count, 10) || 0) * d.value,
+        0,
+    );
+
+    // Calculate expected cash total: amount + late fee - discount
+    const expectedCashTotal =
+        (parseInt(paymentData.amount, 10) || 0) +
+        (parseFloat(paymentData.late_fee) || 0) -
+        (parseInt(paymentData.discount, 10) || 0);
+
+    // Handler for denomination count
+    const handleDenominationChange = (idx, count) => {
+        setDenominations((prev) =>
+            prev.map((d, i) =>
+                i === idx
+                    ? {
+                          ...d,
+                          count,
+                          serials:
+                              d.value === 500
+                                  ? Array.from(
+                                        { length: parseInt(count) || 0 },
+                                        (_, i) => d.serials[i] || "",
+                                    )
+                                  : [],
+                      }
+                    : d,
+            ),
+        );
+    };
+
+    // Handler for 500 note serial numbers (autocapitalize any letters)
+    const handleSerialChange = (denIdx, serialIdx, serial) => {
+        setDenominations((prev) =>
+            prev.map((d, i) =>
+                i === denIdx
+                    ? {
+                          ...d,
+                          serials: d.serials.map((s, j) =>
+                              j === serialIdx ? serial.toUpperCase() : s,
+                          ),
+                      }
+                    : d,
+            ),
+        );
+    };
+
+    // Handler for cheque details
+    const handleChequeDetailChange = (field, value) => {
+        setChequeDetails((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    // Custom submit handler to include denominations/cheque details
+    const customSubmit = (e) => {
+        e.preventDefault();
+        if (
+            paymentData.payment_method === "CASH" &&
+            cashTotal !== expectedCashTotal
+        ) {
+            toast &&
+                toast.error(
+                    `Denomination total (${cashTotal}) does not match the expected total (${expectedCashTotal}).`,
+                );
+            return;
+        }
+        let updatedData = { ...paymentData };
+        if (paymentData.payment_method === "CHEQUE") {
+            updatedData = { ...updatedData, ...chequeDetails };
+        }
+        if (paymentData.payment_method === "CASH") {
+            updatedData = {
+                ...updatedData,
+                denominations: denominations
+                    .filter((d) => d.count && parseInt(d.count))
+                    .map((d) => ({
+                        value: d.value,
+                        count: parseInt(d.count),
+                        serials: d.serials,
+                    })),
+            };
+        }
+        onSubmit(updatedData);
+    };
+
+    // For rendering serials in rows of 4
+    function render500SerialInputs(serials) {
+        const rows = [];
+        for (let i = 0; i < serials.length; i += 4) {
+            rows.push(
+                <div className="flex gap-3 mt-3" key={`serial-row-${i}`}>
+                    {serials.slice(i, i + 4).map((serial, idx) => (
+                        <input
+                            key={i + idx}
+                            type="text"
+                            value={serial}
+                            onChange={(e) =>
+                                handleSerialChange(0, i + idx, e.target.value)
+                            }
+                            className="w-30 px-2 py-2 border border-gray-200 rounded"
+                            placeholder={`Serial #${i + idx + 1}`}
+                        />
+                    ))}
+                </div>,
+            );
+        }
+        return rows;
+    }
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
@@ -28,7 +170,6 @@ const RecordPaymentModal = ({
                             <X className="w-6 h-6" />
                         </button>
                     </div>
-
                     <div className="mb-6 p-4 bg-blue-50 rounded-lg">
                         <h3 className="font-medium text-gray-900">
                             {student.firstName} {student.middleName || ""}{" "}
@@ -39,9 +180,9 @@ const RecordPaymentModal = ({
                             {student.mobileNumber}
                         </p>
                     </div>
-
-                    <form onSubmit={onSubmit} className="space-y-6">
+                    <form onSubmit={customSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Amount */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Amount *
@@ -81,7 +222,7 @@ const RecordPaymentModal = ({
                                     }}
                                 />
                             </div>
-
+                            {/* Payment Date */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Payment Date *
@@ -99,7 +240,7 @@ const RecordPaymentModal = ({
                                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
-
+                            {/* Payment Method */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Payment Method *
@@ -124,7 +265,7 @@ const RecordPaymentModal = ({
                                     <option value="CHEQUE">Cheque</option>
                                 </select>
                             </div>
-
+                            {/* Late Fee */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Late Fee
@@ -147,7 +288,7 @@ const RecordPaymentModal = ({
                                     placeholder="Late fee amount"
                                 />
                             </div>
-
+                            {/* Discount */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Discount
@@ -156,7 +297,6 @@ const RecordPaymentModal = ({
                                     type="text"
                                     value={paymentData.discount}
                                     onChange={(e) => {
-                                        // Only allow digits
                                         let value = e.target.value.replace(
                                             /[^0-9]/g,
                                             "",
@@ -188,8 +328,50 @@ const RecordPaymentModal = ({
                                 />
                             </div>
                         </div>
-
-                        {paymentData.payment_method !== "CASH" && (
+                        {/* Conditional fields */}
+                        {/* Cheque Details */}
+                        {paymentData.payment_method === "CHEQUE" && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Cheque Number *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={chequeDetails.cheque_number}
+                                        onChange={(e) =>
+                                            handleChequeDetailChange(
+                                                "cheque_number",
+                                                e.target.value,
+                                            )
+                                        }
+                                        required
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Bank Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={chequeDetails.bank_name}
+                                        onChange={(e) =>
+                                            handleChequeDetailChange(
+                                                "bank_name",
+                                                e.target.value,
+                                            )
+                                        }
+                                        required
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        {/* Transaction ID for non-cash/cheque */}
+                        {["CARD", "UPI", "BANK_TRANSFER"].includes(
+                            paymentData.payment_method,
+                        ) && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Transaction ID
@@ -208,7 +390,91 @@ const RecordPaymentModal = ({
                                 />
                             </div>
                         )}
-
+                        {/* Cash Denominations */}
+                        {paymentData.payment_method === "CASH" && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Cash Denominations (must total to{" "}
+                                    {expectedCashTotal})
+                                </label>
+                                {/* 500 row */}
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-semibold">500</span>
+                                    <span>x</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={denominations[0].count}
+                                        onChange={(e) =>
+                                            handleDenominationChange(
+                                                0,
+                                                e.target.value.replace(
+                                                    /[^0-9]/g,
+                                                    "",
+                                                ),
+                                            )
+                                        }
+                                        className="w-14 px-2 py-1 border border-gray-300 rounded"
+                                        placeholder="0"
+                                    />
+                                </div>
+                                {/* 500 serial numbers, 4 per row */}
+                                {parseInt(denominations[0].count) > 0 &&
+                                    render500SerialInputs(
+                                        denominations[0].serials,
+                                    )}
+                                {/* Other denominations */}
+                                <div className="flex flex-wrap gap-4 mt-2">
+                                    {denominationValues
+                                        .slice(1)
+                                        .map((value, idx) => (
+                                            <div
+                                                key={value}
+                                                className="flex items-center gap-1"
+                                            >
+                                                <span className="font-semibold">
+                                                    {value}
+                                                </span>
+                                                <span>x</span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={
+                                                        denominations[idx + 1]
+                                                            .count
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleDenominationChange(
+                                                            idx + 1,
+                                                            e.target.value.replace(
+                                                                /[^0-9]/g,
+                                                                "",
+                                                            ),
+                                                        )
+                                                    }
+                                                    className="w-14 px-2 py-1 border border-gray-300 rounded"
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                        ))}
+                                </div>
+                                <div className="mt-2 text-sm text-gray-700">
+                                    Total entered:{" "}
+                                    <span
+                                        className={
+                                            cashTotal === expectedCashTotal
+                                                ? "text-green-700 font-bold"
+                                                : "text-red-700 font-bold"
+                                        }
+                                    >
+                                        {cashTotal}
+                                    </span>
+                                    {cashTotal !== expectedCashTotal &&
+                                        " (does not match required total)"}
+                                </div>
+                            </div>
+                        )}
+                        {/* Notes */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Notes
@@ -226,7 +492,6 @@ const RecordPaymentModal = ({
                                 placeholder="Add any notes about this payment"
                             />
                         </div>
-
                         <div className="flex gap-4">
                             <button
                                 type="submit"
