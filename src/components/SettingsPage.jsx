@@ -17,6 +17,35 @@ import { formatDate } from "./utils.jsx";
 import ConfirmDeleteModal from "./modals/ConfirmDeleteModal";
 
 const SettingsPage = () => {
+    // Get user role from token
+    let userRole = null;
+    try {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            userRole = payload.role;
+        }
+    } catch (e) {
+        userRole = null;
+    }
+
+    if (userRole === "staff") {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="rounded-full h-12 w-12 bg-red-100 flex items-center justify-center mx-auto mb-4">
+                        <X className="w-6 h-6 text-red-500" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        Access Denied
+                    </h2>
+                    <p className="text-gray-600">
+                        You do not have permission to view system settings.
+                    </p>
+                </div>
+            </div>
+        );
+    }
     const fileInputRef = useRef(null);
     const backupFileInputRef = useRef(null);
 
@@ -329,30 +358,33 @@ const SettingsPage = () => {
                 <div className="flex space-x-1 p-1">
                     <button
                         onClick={() => setActiveTab("institute")}
-                        className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${activeTab === "institute"
+                        className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+                            activeTab === "institute"
                                 ? "bg-blue-500 text-white shadow-sm"
                                 : "text-gray-600 hover:bg-gray-100"
-                            }`}
+                        }`}
                     >
                         <Building2 className="w-5 h-5" />
                         <span>Institute Settings</span>
                     </button>
                     <button
                         onClick={() => setActiveTab("database")}
-                        className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${activeTab === "database"
+                        className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+                            activeTab === "database"
                                 ? "bg-blue-500 text-white shadow-sm"
                                 : "text-gray-600 hover:bg-gray-100"
-                            }`}
+                        }`}
                     >
                         <Database className="w-5 h-5" />
                         <span>Database Management</span>
                     </button>
                     <button
                         onClick={() => setActiveTab("export")}
-                        className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${activeTab === "export"
+                        className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+                            activeTab === "export"
                                 ? "bg-blue-500 text-white shadow-sm"
                                 : "text-gray-600 hover:bg-gray-100"
-                            }`}
+                        }`}
                     >
                         <Download className="w-5 h-5" />
                         <span>Export Data</span>
