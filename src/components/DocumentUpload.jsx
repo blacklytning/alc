@@ -233,6 +233,18 @@ const DocumentUpload = () => {
     const [documentToDelete, setDocumentToDelete] = useState(null);
     const fileInputRef = useRef(null);
 
+    // Get user role from token
+    let userRole = null;
+    try {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            userRole = payload.role;
+        }
+    } catch (e) {
+        userRole = null;
+    }
+
     const API_BASE = import.meta.env.VITE_API_URL;
 
     const {
@@ -804,15 +816,17 @@ const DocumentUpload = () => {
                                         >
                                             <Download className="w-4 h-4" />
                                         </button>
-                                        <button
-                                            onClick={() =>
-                                                handleDeleteDocument(doc.id)
-                                            }
-                                            className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-100 transition-colors"
-                                            title="Delete Document"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                        {userRole !== "staff" && (
+                                            <button
+                                                onClick={() =>
+                                                    handleDeleteDocument(doc.id)
+                                                }
+                                                className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-100 transition-colors"
+                                                title="Delete Document"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
