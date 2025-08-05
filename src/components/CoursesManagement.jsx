@@ -15,6 +15,35 @@ import { toast } from "react-toastify";
 import ErrorFallback from "./ErrorFallback";
 
 const CoursesManagement = () => {
+    // Get user role from token
+    let userRole = null;
+    try {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            userRole = payload.role;
+        }
+    } catch (e) {
+        userRole = null;
+    }
+
+    if (userRole === "staff") {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <div className="rounded-full h-12 w-12 bg-red-100 flex items-center justify-center mx-auto mb-4">
+                        <X className="w-6 h-6 text-red-500" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        Access Denied
+                    </h2>
+                    <p className="text-gray-600">
+                        You do not have permission to view or manage courses.
+                    </p>
+                </div>
+            </div>
+        );
+    }
     const [courses, setCourses] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
@@ -179,9 +208,9 @@ const CoursesManagement = () => {
             // Show success message
             toast.success(
                 result.message ||
-                    (editingCourse
-                        ? "Course updated successfully!"
-                        : "Course created successfully!"),
+                (editingCourse
+                    ? "Course updated successfully!"
+                    : "Course created successfully!"),
             );
 
             // Refresh courses list and stats
@@ -273,11 +302,10 @@ const CoursesManagement = () => {
                         },
                     }),
                 })}
-                className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 ease-in-out bg-white/50 backdrop-blur-xs ${
-                    errors[name]
+                className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 ease-in-out bg-white/50 backdrop-blur-xs ${errors[name]
                         ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                         : "border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                }`}
+                    }`}
                 {...props}
             />
             {errors[name] && (
@@ -432,8 +460,8 @@ const CoursesManagement = () => {
                                                     <div className="text-sm text-gray-500">
                                                         {course.createdAt
                                                             ? new Date(
-                                                                  course.createdAt,
-                                                              ).toLocaleDateString()
+                                                                course.createdAt,
+                                                            ).toLocaleDateString()
                                                             : "-"}
                                                     </div>
                                                 </td>

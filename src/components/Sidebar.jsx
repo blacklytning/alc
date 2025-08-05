@@ -76,10 +76,12 @@ const Sidebar = () => {
         },
     ];
 
-    // Filter out Settings for staff users
+    // Filter out Settings and Course Management for staff users
     let filteredMenuItems = menuItems;
     if (user && user.role === "staff") {
-        filteredMenuItems = menuItems.filter((item) => item.id !== "settings");
+        filteredMenuItems = menuItems.filter(
+            (item) => item.id !== "settings" && item.id !== "courses",
+        );
     }
 
     const handleLogout = () => {
@@ -144,10 +146,11 @@ const Sidebar = () => {
                             <GraduationCap className="h-6 w-6 text-white" />
                         </div>
                         <div
-                            className={`flex-1 min-w-0 transition-all duration-500 ease-in-out overflow-hidden ${isCollapsed
+                            className={`flex-1 min-w-0 transition-all duration-500 ease-in-out overflow-hidden ${
+                                isCollapsed
                                     ? "opacity-0 transform translate-x-4 pointer-events-none w-0"
                                     : "opacity-100 transform translate-x-0"
-                                }`}
+                            }`}
                         >
                             <h1 className="text-xl font-bold text-gray-900 whitespace-nowrap">
                                 EduManage
@@ -174,23 +177,26 @@ const Sidebar = () => {
                                 data-tooltip-id="sidebar-tip"
                                 data-tooltip-content={item.label}
                                 data-tooltip-hidden={!isCollapsed}
-                                className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 ease-in-out group relative overflow-hidden ${isActive
+                                className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 ease-in-out group relative overflow-hidden ${
+                                    isActive
                                         ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm transform scale-[1.02]"
                                         : "text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:transform hover:scale-[1.01]"
-                                    } ${isCollapsed ? "justify-center" : "space-x-3"}`}
+                                } ${isCollapsed ? "justify-center" : "space-x-3"}`}
                             >
                                 <Icon
-                                    className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-in-out ${isActive
+                                    className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-in-out ${
+                                        isActive
                                             ? "text-white"
                                             : "text-gray-500 group-hover:text-gray-700"
-                                        }`}
+                                    }`}
                                 />
 
                                 <span
-                                    className={`font-medium text-sm whitespace-nowrap transition-all duration-500 ease-in-out ${isCollapsed
+                                    className={`font-medium text-sm whitespace-nowrap transition-all duration-500 ease-in-out ${
+                                        isCollapsed
                                             ? "opacity-0 transform translate-x-4 pointer-events-none w-0"
                                             : "opacity-100 transform translate-x-0 w-auto"
-                                        }`}
+                                    }`}
                                 >
                                     {item.label}
                                 </span>
@@ -217,8 +223,8 @@ const Sidebar = () => {
                                 {userLoading
                                     ? "U"
                                     : user && user.username
-                                        ? user.username.charAt(0).toUpperCase()
-                                        : "U"}
+                                      ? user.username.charAt(0).toUpperCase()
+                                      : "U"}
                             </span>
                         </div>
                     </div>
@@ -233,8 +239,8 @@ const Sidebar = () => {
                                     <span className="text-white font-semibold text-sm">
                                         {user && user.username
                                             ? user.username
-                                                .charAt(0)
-                                                .toUpperCase()
+                                                  .charAt(0)
+                                                  .toUpperCase()
                                             : "U"}
                                     </span>
                                 </div>
