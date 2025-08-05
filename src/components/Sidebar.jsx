@@ -136,7 +136,7 @@ const Sidebar = () => {
 
     return (
         <div
-            className={`${isCollapsed ? "w-20" : "w-80"} transition-all duration-500 ease-in-out bg-white border-r border-gray-200/50 shadow-sm flex flex-col h-screen relative`}
+            className={`${isCollapsed ? "w-20" : "w-70"} transition-all duration-500 ease-in-out bg-white border-r border-gray-200/50 shadow-sm flex flex-col h-screen relative`}
         >
             {/* Header */}
             <div className="p-6 border-b border-gray-200/50 flex-shrink-0">
