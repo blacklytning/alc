@@ -342,10 +342,8 @@ const StudentAdmissionsList = () => {
                                             "https://via.placeholder.com/80x80?text=No+Photo";
                                     }}
                                 />
-                                <div className="text-lg font-semibold text-gray-900 text-center mb-1 min-h-[3rem] flex items-center justify-center">
-                                    {admission.firstName}{" "}
-                                    {admission.middleName || ""}{" "}
-                                    {admission.lastName}
+                                <div className="text-base font-medium text-gray-900 text-center mb-1 min-h-[2.5rem] flex items-center justify-center">
+                                    {admission.firstName} {admission.lastName}
                                 </div>
                                 <div className="text-sm text-gray-600 mb-2 text-center capitalize">
                                     {admission.courseName.replace("-", " ")}
