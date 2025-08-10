@@ -13,7 +13,9 @@ import {
 import { formatDate } from "./utils.jsx";
 import { Link } from "react-router";
 import { toast } from "react-toastify";
+
 import StudentDetailsModal from "./modals/StudentDetailsModal";
+import LearnerCredentialsModal from "./modals/LearnerCredentialsModal";
 
 const StudentAdmissionsList = () => {
     const [admissions, setAdmissions] = useState([]);
@@ -25,6 +27,10 @@ const StudentAdmissionsList = () => {
     const [filterDate, setFilterDate] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const studentsPerPage = 12;
+
+    // State for learner credentials modal
+    const [showCredentialsModal, setShowCredentialsModal] = useState(false);
+    const [credentialsStudent, setCredentialsStudent] = useState(null);
 
     const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -361,6 +367,18 @@ const StudentAdmissionsList = () => {
                                         <Eye className="w-4 h-4" />
                                         View Details
                                     </button>
+                                    <button
+                                        onClick={() => {
+                                            setCredentialsStudent(admission);
+                                            setShowCredentialsModal(true);
+                                        }}
+                                        className="bg-green-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 flex items-center gap-2 justify-center"
+                                    >
+                                        <span role="img" aria-label="key">
+                                            🔑
+                                        </span>
+                                        Credentials
+                                    </button>
                                     <Link
                                         to={`/admissions/edit/${admission.id}`}
                                         className="bg-yellow-500 text-white px-4 py-2 rounded-xl font-medium hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 flex items-center gap-2 justify-center"
@@ -416,6 +434,41 @@ const StudentAdmissionsList = () => {
                 selectedAdmission={selectedAdmission}
                 onClose={() => setSelectedAdmission(null)}
                 API_BASE={API_BASE}
+            />
+
+            {/* Modal for Learner Credentials */}
+            <LearnerCredentialsModal
+                open={showCredentialsModal}
+                onClose={() => {
+                    setShowCredentialsModal(false);
+                    setCredentialsStudent(null);
+                }}
+                student={credentialsStudent}
+                onSave={async (credentials) => {
+                    if (!credentialsStudent) return;
+                    try {
+                        const res = await fetch(
+                            `${API_BASE}/admission/${credentialsStudent.id}/credentials`,
+                            {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(credentials),
+                            },
+                        );
+                        if (!res.ok)
+                            throw new Error("Failed to save credentials");
+                        toast.success("Learner credentials saved!");
+                        setShowCredentialsModal(false);
+                        setCredentialsStudent(null);
+                        // Optionally refresh admissions list
+                        if (window._fetchAdmissions)
+                            await window._fetchAdmissions();
+                    } catch (err) {
+                        toast.error("Error saving credentials");
+                    }
+                }}
             />
         </div>
     );
