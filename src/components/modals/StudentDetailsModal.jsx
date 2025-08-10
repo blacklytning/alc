@@ -1,6 +1,6 @@
 import React from "react";
 import { formatAadhar, formatDate } from "../utils.jsx";
-import { Edit2, KeyRound, X } from "lucide-react";
+import { Edit2, KeyRound, X, FileBarChart2 } from "lucide-react";
 
 const StudentDetailsModal = ({
     selectedAdmission,
@@ -8,6 +8,7 @@ const StudentDetailsModal = ({
     API_BASE,
     onEdit,
     onCredentials,
+    onExam,
 }) => {
     if (!selectedAdmission) return null;
 
@@ -314,6 +315,13 @@ const StudentDetailsModal = ({
                         >
                             <KeyRound className="w-5 h-5 mr-2" />
                             Credentials
+                        </button>
+                        <button
+                            onClick={onExam}
+                            className="bg-blue-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center gap-2 justify-center"
+                        >
+                            <FileBarChart2 className="w-5 h-5 mr-2" />
+                            Exam
                         </button>
                         <button
                             onClick={onClose}

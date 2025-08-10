@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 
 import StudentDetailsModal from "./modals/StudentDetailsModal";
 import LearnerCredentialsModal from "./modals/LearnerCredentialsModal";
+import ExamDetailsModal from "./modals/ExamDetailsModal";
 
 const StudentAdmissionsList = () => {
     const [admissions, setAdmissions] = useState([]);
@@ -30,6 +31,10 @@ const StudentAdmissionsList = () => {
     // State for learner credentials modal
     const [showCredentialsModal, setShowCredentialsModal] = useState(false);
     const [credentialsStudent, setCredentialsStudent] = useState(null);
+
+    // State for exam details modal
+    const [showExamModal, setShowExamModal] = useState(false);
+    const [examStudent, setExamStudent] = useState(null);
 
     const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -423,6 +428,12 @@ const StudentAdmissionsList = () => {
                         setShowCredentialsModal(true);
                     }
                 }}
+                onExam={() => {
+                    if (selectedAdmission) {
+                        setExamStudent(selectedAdmission);
+                        setShowExamModal(true);
+                    }
+                }}
             />
 
             {/* Modal for Learner Credentials */}
@@ -451,11 +462,44 @@ const StudentAdmissionsList = () => {
                         toast.success("Learner credentials saved!");
                         setShowCredentialsModal(false);
                         setCredentialsStudent(null);
-                        // Optionally refresh admissions list
                         if (window._fetchAdmissions)
                             await window._fetchAdmissions();
                     } catch (err) {
                         toast.error("Error saving credentials");
+                    }
+                }}
+            />
+
+            {/* Modal for Exam Details */}
+            <ExamDetailsModal
+                open={showExamModal}
+                onClose={() => {
+                    setShowExamModal(false);
+                    setExamStudent(null);
+                }}
+                student={examStudent}
+                onSave={async (examDetails) => {
+                    if (!examStudent) return;
+                    try {
+                        const res = await fetch(
+                            `${API_BASE}/admission/${examStudent.id}/exam_result`,
+                            {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(examDetails),
+                            },
+                        );
+                        if (!res.ok)
+                            throw new Error("Failed to save exam details");
+                        toast.success("Exam details saved!");
+                        setShowExamModal(false);
+                        setExamStudent(null);
+                        if (window._fetchAdmissions)
+                            await window._fetchAdmissions();
+                    } catch (err) {
+                        toast.error("Error saving exam details");
                     }
                 }}
             />
