@@ -151,29 +151,64 @@ const FeeDetailsModal = ({
                                                         </span>
                                                     </div>
                                                     <p className="text-sm text-gray-600 mb-1">
-                                                        Date:{" "}
+                                                        Date: {" "}
                                                         {formatDate(
                                                             payment.payment_date,
                                                         )}
                                                     </p>
                                                     {payment.transaction_id && (
                                                         <p className="text-sm text-gray-600 mb-1">
-                                                            Transaction ID:{" "}
+                                                            Transaction ID: {" "}
                                                             {
                                                                 payment.transaction_id
                                                             }
                                                         </p>
                                                     )}
+                                                                                                        {/* Cheque details for cheque payments */}
+                                                                                                        {payment.payment_method === "CHEQUE" && (
+                                                                                                            <>
+                                                                                                                {payment.cheque_number && (
+                                                                                                                    <p className="text-sm text-gray-600 mb-1">
+                                                                                                                        Cheque Number: {payment.cheque_number}
+                                                                                                                    </p>
+                                                                                                                )}
+                                                                                                                {payment.bank_name && (
+                                                                                                                    <p className="text-sm text-gray-600 mb-1">
+                                                                                                                        Bank Name: {payment.bank_name}
+                                                                                                                    </p>
+                                                                                                                )}
+                                                                                                            </>
+                                                                                                        )}
                                                     {payment.notes && (
                                                         <p className="text-sm text-gray-600">
-                                                            Notes:{" "}
+                                                            Notes: {" "}
                                                             {payment.notes}
                                                         </p>
+                                                    )}
+                                                    {/* Denomination breakdown for cash payments */}
+                                                    {Array.isArray(payment.denominations) && payment.denominations.length > 0 && (
+                                                      <div className="mt-2 text-sm text-gray-800">
+                                                        <span className="font-semibold">Denomination Breakdown:</span>
+                                                        <ul className="list-disc ml-6 mt-1">
+                                                          {payment.denominations.map((d, idx) => (
+                                                            <li key={d.value}>
+                                                              ₹{d.value} x {d.count}
+                                                              {d.value === 500 && d.serials && d.serials.length > 0 ? (
+                                                                <ul className="list-none ml-4 text-xs text-gray-600">
+                                                                  {d.serials.map((serial, sidx) => (
+                                                                    <li key={serial}>Serial #{sidx + 1}: {serial}</li>
+                                                                  ))}
+                                                                </ul>
+                                                              ) : null}
+                                                            </li>
+                                                          ))}
+                                                        </ul>
+                                                      </div>
                                                     )}
                                                 </div>
                                                 {payment.late_fee > 0 && (
                                                     <div className="text-sm text-red-600">
-                                                        Late Fee:{" "}
+                                                        Late Fee: {" "}
                                                         {formatCurrency(
                                                             payment.late_fee,
                                                         )}

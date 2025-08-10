@@ -218,16 +218,30 @@ const FeeManagement = () => {
         setShowPaymentModal(true);
     };
 
-    const handlePaymentSubmit = async (e) => {
-        e.preventDefault();
+    // Accept updated payment data from modal and send to backend
+    const handlePaymentSubmit = async (updatedPaymentDataOrEvent) => {
+        let updatedPaymentData = updatedPaymentDataOrEvent;
+        // If called as a form event, fallback to current paymentData
+        if (
+            updatedPaymentDataOrEvent &&
+            typeof updatedPaymentDataOrEvent.preventDefault === "function"
+        ) {
+            updatedPaymentDataOrEvent.preventDefault();
+            updatedPaymentData = paymentData;
+        }
 
+        // Always update paymentData state so FeeReceipt and others get latest
+        setPaymentData(updatedPaymentData);
+
+        // Debug: log payment data being sent to backend
+        console.log("[DEBUG] Payment data being sent to backend:", updatedPaymentData);
         try {
             const response = await fetch(`${API_BASE}/fees/payment`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(paymentData),
+                body: JSON.stringify(updatedPaymentData),
             });
 
             if (response.ok) {

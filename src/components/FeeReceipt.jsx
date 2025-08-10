@@ -121,6 +121,15 @@ const amountToWords = (amount) => {
 };
 
 const FeeReceipt = ({ paymentData, student, onClose }) => {
+    // Denomination breakdown for cash payments
+    // Example: paymentData.denominations = { "2000": 1, "500": 2, "100": 3 }
+    // Example: paymentData.serials_500 = ["A123456", "B654321"]
+    // Always show denominations if payment method is CASH, even if some values are zero
+    // Support denominations as array (from modal)
+    const denominations =
+        paymentData.payment_method === "CASH" && paymentData.denominations
+            ? paymentData.denominations
+            : null;
     const [instituteSettings, setInstituteSettings] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -184,6 +193,27 @@ const FeeReceipt = ({ paymentData, student, onClose }) => {
     }, [loading, instituteSettings]);
 
     const generateReceiptHTML = () => {
+        // Denomination HTML
+        let denominationHTML = "";
+        if (
+            paymentData.payment_method === "CASH" &&
+            paymentData.denominations &&
+            Array.isArray(paymentData.denominations)
+        ) {
+            denominationHTML += `<div style='margin:8px 0 16px 0;'><strong>Denomination Breakdown:</strong><ul style='margin:4px 0 0 18px;'>`;
+            paymentData.denominations.forEach((d) => {
+                denominationHTML += `<li>₹${d.value} x ${d.count}`;
+                if (d.value === 500 && d.serials && d.serials.length > 0) {
+                    denominationHTML += `<ul style='margin:2px 0 0 16px; font-size:10px; color:#555;'>`;
+                    d.serials.forEach((serial, idx) => {
+                        denominationHTML += `<li>Serial #${idx + 1}: ${serial}</li>`;
+                    });
+                    denominationHTML += `</ul>`;
+                }
+                denominationHTML += `</li>`;
+            });
+            denominationHTML += `</ul></div>`;
+        }
         return `
             <!DOCTYPE html>
             <html lang="en">
@@ -253,6 +283,8 @@ const FeeReceipt = ({ paymentData, student, onClose }) => {
                         <div><strong>Receipt #:</strong> ${generateReceiptNumber()}</div>
                         <div><strong>Payment Mode:</strong> ${paymentData.payment_method}</div>
                     </div>
+
+                    ${denominationHTML}
 
                     <table>
                         <thead>
@@ -482,6 +514,44 @@ const FeeReceipt = ({ paymentData, student, onClose }) => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Denomination breakdown for cash payments (preview) */}
+                            {Array.isArray(denominations) &&
+                            denominations.length > 0 ? (
+                                <div className="mb-4">
+                                    <span className="text-sm font-semibold text-gray-700">
+                                        Denomination Breakdown:
+                                    </span>
+                                    <ul className="list-disc ml-6 mt-1 text-sm text-gray-800">
+                                        {denominations.map((d, idx) => (
+                                            <li key={d.value}>
+                                                ₹{d.value} x {d.count}
+                                                {d.value === 500 &&
+                                                d.serials &&
+                                                d.serials.length > 0 ? (
+                                                    <ul className="list-none ml-4 text-xs text-gray-600">
+                                                        {d.serials.map(
+                                                            (serial, sidx) => (
+                                                                <li
+                                                                    key={serial}
+                                                                >
+                                                                    Serial #
+                                                                    {sidx + 1}:{" "}
+                                                                    {serial}
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
+                                                ) : null}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : paymentData.payment_method === "CASH" ? (
+                                <div className="mb-4 text-xs text-red-600">
+                                    No denomination data found for cash payment.
+                                </div>
+                            ) : null}
 
                             <div className="border-t pt-4 mb-4">
                                 <div className="flex justify-between items-center">

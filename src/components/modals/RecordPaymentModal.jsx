@@ -116,6 +116,7 @@ const RecordPaymentModal = ({
         if (paymentData.payment_method === "CHEQUE") {
             updatedData = { ...updatedData, ...chequeDetails };
         }
+        // Always include denominations as an array
         if (paymentData.payment_method === "CASH") {
             updatedData = {
                 ...updatedData,
@@ -126,6 +127,11 @@ const RecordPaymentModal = ({
                         count: parseInt(d.count),
                         serials: d.serials,
                     })),
+            };
+        } else {
+            updatedData = {
+                ...updatedData,
+                denominations: [],
             };
         }
         onSubmit(updatedData);
