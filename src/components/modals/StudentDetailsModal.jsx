@@ -24,7 +24,7 @@ const StudentDetailsModal = ({
                             onClick={onClose}
                             className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
                         >
-                            ×
+                            ×b
                         </button>
                     </div>
 
@@ -281,6 +281,219 @@ const StudentDetailsModal = ({
                             </div>
                         </div>
 
+                        {/* Credentials Section (6) */}
+                        {(selectedAdmission.learner_code ||
+                            selectedAdmission.era_id ||
+                            selectedAdmission.era_password) && (
+                                <div className="bg-orange-50 p-6 rounded-2xl">
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                                        <span className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center mr-2 text-orange-600 text-sm">
+                                            6
+                                        </span>
+                                        Learner Credentials
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {selectedAdmission.learner_code && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    Learner Code:
+                                                </span>
+                                                <p className="font-medium text-gray-900">
+                                                    {selectedAdmission.learner_code}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {selectedAdmission.era_id && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    ERA ID:
+                                                </span>
+                                                <p className="font-medium text-gray-900">
+                                                    {selectedAdmission.era_id}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {selectedAdmission.era_password && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    ERA Password:
+                                                </span>
+                                                <p className="font-medium text-gray-900">
+                                                    {selectedAdmission.era_password}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                        {/* Exam Details Section (7) */}
+                        {(selectedAdmission.exam_date ||
+                            selectedAdmission.era_score !== undefined ||
+                            selectedAdmission.final_score !== undefined ||
+                            selectedAdmission.result) && (
+                                <div className="bg-blue-50 p-6 rounded-2xl">
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                                        <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-2 text-blue-600 text-sm">
+                                            7
+                                        </span>
+                                        Exam Details
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {selectedAdmission.exam_date && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    Exam Date:
+                                                </span>
+                                                <p className="font-medium text-gray-900">
+                                                    {formatDate(
+                                                        selectedAdmission.exam_date,
+                                                    )}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {selectedAdmission.era_score !==
+                                            undefined && (
+                                                <div>
+                                                    <span className="text-sm text-gray-500">
+                                                        ERA Score:
+                                                    </span>
+                                                    <p className="font-medium text-gray-900">
+                                                        {selectedAdmission.era_score}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        {selectedAdmission.final_score !==
+                                            undefined && (
+                                                <div>
+                                                    <span className="text-sm text-gray-500">
+                                                        Final Score:
+                                                    </span>
+                                                    <p className="font-medium text-gray-900">
+                                                        {selectedAdmission.final_score}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        {selectedAdmission.result && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    Result:
+                                                </span>
+                                                <p className="font-medium text-gray-900 capitalize">
+                                                    {selectedAdmission.result}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                        {/* Credentials Section (6) */}
+                        {(selectedAdmission.learner_code ||
+                            selectedAdmission.era_id ||
+                            selectedAdmission.era_password) && (
+                                <div className="bg-orange-50 p-6 rounded-2xl">
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                                        <span className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center mr-2 text-orange-600 text-sm">
+                                            6
+                                        </span>
+                                        Learner Credentials
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {selectedAdmission.learner_code && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    Learner Code:
+                                                </span>
+                                                <p className="font-medium text-gray-900">
+                                                    {selectedAdmission.learner_code}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {selectedAdmission.era_id && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    ERA ID:
+                                                </span>
+                                                <p className="font-medium text-gray-900">
+                                                    {selectedAdmission.era_id}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {selectedAdmission.era_password && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    ERA Password:
+                                                </span>
+                                                <p className="font-medium text-gray-900">
+                                                    {selectedAdmission.era_password}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                        {/* Exam Details Section (7) */}
+                        {(selectedAdmission.exam_date ||
+                            selectedAdmission.era_score !== undefined ||
+                            selectedAdmission.final_score !== undefined ||
+                            selectedAdmission.result) && (
+                                <div className="bg-blue-50 p-6 rounded-2xl">
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                                        <span className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-2 text-blue-600 text-sm">
+                                            7
+                                        </span>
+                                        Exam Details
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {selectedAdmission.exam_date && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    Exam Date:
+                                                </span>
+                                                <p className="font-medium text-gray-900">
+                                                    {formatDate(
+                                                        selectedAdmission.exam_date,
+                                                    )}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {selectedAdmission.era_score !==
+                                            undefined && (
+                                                <div>
+                                                    <span className="text-sm text-gray-500">
+                                                        ERA Score:
+                                                    </span>
+                                                    <p className="font-medium text-gray-900">
+                                                        {selectedAdmission.era_score}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        {selectedAdmission.final_score !==
+                                            undefined && (
+                                                <div>
+                                                    <span className="text-sm text-gray-500">
+                                                        Final Score:
+                                                    </span>
+                                                    <p className="font-medium text-gray-900">
+                                                        {selectedAdmission.final_score}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        {selectedAdmission.result && (
+                                            <div>
+                                                <span className="text-sm text-gray-500">
+                                                    Result:
+                                                </span>
+                                                <p className="font-medium text-gray-900 capitalize">
+                                                    {selectedAdmission.result}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         {/* Submission Details */}
                         <div className="bg-gray-50 p-6 rounded-2xl">
                             <h3 className="text-xl font-semibold text-gray-900 mb-4">
