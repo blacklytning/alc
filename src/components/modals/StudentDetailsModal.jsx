@@ -1,7 +1,14 @@
 import React from "react";
 import { formatAadhar, formatDate } from "../utils.jsx";
+import { Edit2, KeyRound, X } from "lucide-react";
 
-const StudentDetailsModal = ({ selectedAdmission, onClose, API_BASE }) => {
+const StudentDetailsModal = ({
+    selectedAdmission,
+    onClose,
+    API_BASE,
+    onEdit,
+    onCredentials,
+}) => {
     if (!selectedAdmission) return null;
 
     return (
@@ -293,11 +300,26 @@ const StudentDetailsModal = ({ selectedAdmission, onClose, API_BASE }) => {
                         </div>
                     </div>
 
-                    <div className="mt-8 text-center">
+                    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <button
+                            onClick={onEdit}
+                            className="bg-yellow-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 flex items-center gap-2 justify-center"
+                        >
+                            <Edit2 className="w-5 h-5 mr-2" />
+                            Edit
+                        </button>
+                        <button
+                            onClick={onCredentials}
+                            className="bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 flex items-center gap-2 justify-center"
+                        >
+                            <KeyRound className="w-5 h-5 mr-2" />
+                            Credentials
+                        </button>
                         <button
                             onClick={onClose}
-                            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-sm hover:shadow-sm"
+                            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-sm hover:shadow-sm flex items-center gap-2 justify-center"
                         >
+                            <X className="w-5 h-5 mr-2" />
                             Close Details
                         </button>
                     </div>

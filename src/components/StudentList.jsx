@@ -6,7 +6,6 @@ import {
     RefreshCw,
     Search,
     Eye,
-    Edit2,
     Calendar,
     X,
 } from "lucide-react";
@@ -367,25 +366,6 @@ const StudentAdmissionsList = () => {
                                         <Eye className="w-4 h-4" />
                                         View Details
                                     </button>
-                                    <button
-                                        onClick={() => {
-                                            setCredentialsStudent(admission);
-                                            setShowCredentialsModal(true);
-                                        }}
-                                        className="bg-green-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 flex items-center gap-2 justify-center"
-                                    >
-                                        <span role="img" aria-label="key">
-                                            🔑
-                                        </span>
-                                        Credentials
-                                    </button>
-                                    <Link
-                                        to={`/admissions/edit/${admission.id}`}
-                                        className="bg-yellow-500 text-white px-4 py-2 rounded-xl font-medium hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 flex items-center gap-2 justify-center"
-                                    >
-                                        <Edit2 className="w-4 h-4" />
-                                        Edit
-                                    </Link>
                                 </div>
                             </div>
                         ))}
@@ -434,6 +414,17 @@ const StudentAdmissionsList = () => {
                 selectedAdmission={selectedAdmission}
                 onClose={() => setSelectedAdmission(null)}
                 API_BASE={API_BASE}
+                onEdit={() => {
+                    if (selectedAdmission) {
+                        window.location.href = `/admissions/edit/${selectedAdmission.id}`;
+                    }
+                }}
+                onCredentials={() => {
+                    if (selectedAdmission) {
+                        setCredentialsStudent(selectedAdmission);
+                        setShowCredentialsModal(true);
+                    }
+                }}
             />
 
             {/* Modal for Learner Credentials */}
